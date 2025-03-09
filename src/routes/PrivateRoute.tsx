@@ -16,7 +16,7 @@ const PrivateRoute: React.FC = () => {
         <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }}/>
       ) : (
         // Se não estiver logado, redireciona para Login
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
       )}
     </Stack.Navigator>
   );

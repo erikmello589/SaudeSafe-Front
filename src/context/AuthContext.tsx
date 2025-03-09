@@ -31,11 +31,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const token = await AsyncStorage.getItem('accessToken');
 
-        if (token) 
+        if (token) //TODO 
         {
           setIsAuthenticated(true);
         }
-      } catch (error) {
+
+      } 
+      catch (error)
+      {
         console.log('Erro ao carregar dados do AsyncStorage:', error);
       }
     };
@@ -46,13 +49,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Cadastro do usuário
   const cadastrar = async (username: string, name: string, lastName: string, email: string, password: string): Promise<number> => {
     try {
-      const response = await fetch('https://fivetfc-api.onrender.com/cadastrar', {
+      const response = await fetch('http://10.0.2.2:8080/cadastrar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, name, lastName, email, password }),
       });
 
-      if (response.status != 201) return 0; // Credenciais inválidas
+      if (response.status != 201) 
+      {
+        console.log("Credenciais inválidas")
+        return 0;
+      } // Credenciais inválidas
       
       return 1; // Login bem-sucedido
 
@@ -67,7 +74,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Login do usuário
   const login = async (usernameOrEmail: string, password: string): Promise<number> => {
     try {
-      const response = await fetch('https://fivetfc-api.onrender.com/login', {
+      const response = await fetch('http://10.0.2.2:8080/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ usernameOrEmail, password }),
