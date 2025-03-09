@@ -2,14 +2,25 @@ import * as React from "react";
 import { View, StyleSheet, Dimensions, ScrollView } from "react-native";
 import { Card, Text, useTheme, Avatar, Button } from "react-native-paper";
 import { MotiView } from "moti";
+import { useAuth } from '../context/AuthContext';
 
 const { height } = Dimensions.get("window");
 const CalendarIcon = (props: any) => <Avatar.Icon {...props} icon="calendar" />;
 const FileIcon = (props: any) => <Avatar.Icon {...props} icon="folder-multiple-plus" />;
 const UserIcon = (props: any) => <Avatar.Icon {...props} icon="account-supervisor-circle" />;
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }: any) {
+  const { logout } = useAuth();
   const theme = useTheme(); // Obtém o tema atual
+
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result === 1) {
+      navigation.replace('Register'); // Redireciona para a Home ao logar
+    } else {
+      console.log('Erro ao sair da conta.');
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -75,8 +86,12 @@ export default function HomeScreen() {
         </Card>
       </View>
 
-      <Button mode="contained" onPress={() => console.log('Comece já!')} style={styles.button}>
+      <Button mode="contained" onPress={() => navigation.replace('Register')} style={styles.button}>
         COMECE JÁ!
+      </Button>
+
+      <Button mode="contained" onPress={() => logout()} style={styles.button}>
+        LogOut!
       </Button>
     </ScrollView>
   );
