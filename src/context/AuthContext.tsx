@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { cadastrar, login, logout } from '../services/AuthService';
 
 // Tipagem do Contexto de Autenticação
 interface AuthContextType {
@@ -30,15 +31,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const loadStorageData = async () => {
       try {
         const token = await AsyncStorage.getItem('accessToken');
-
-        if (token) //TODO 
-        {
+        if (token) {
           setIsAuthenticated(true);
         }
-
-      } 
-      catch (error)
-      {
+      } catch (error) {
         console.log('Erro ao carregar dados do AsyncStorage:', error);
       }
     };
@@ -46,80 +42,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     loadStorageData();
   }, []);
 
-  // Cadastro do usuário
-  const cadastrar = async (username: string, name: string, lastName: string, email: string, password: string): Promise<number> => {
-    try {
-      const response = await fetch('http://10.0.2.2:8080/cadastrar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, name, lastName, email, password }),
-      });
-
-      if (response.status != 201) 
-      {
-        console.log("Credenciais inválidas")
-        return 0;
-      } // Credenciais inválidas
-      
-      return 1; // Login bem-sucedido
-
-    } 
-    catch (error) 
-    {
-      console.log('Erro no login:', error);
-      return -1; // Erro interno
-    }
+  // Envelopa as funções do authService para atualizar o estado de autenticação
+  const handleLogin = async (emailOuUsername: string, senha: string) => {
+    const result = await login(emailOuUsername, senha);
+    if (result === 1) setIsAuthenticated(true);
+    return result;
   };
 
-  // Login do usuário
-  const login = async (usernameOrEmail: string, password: string): Promise<number> => {
-    try {
-      const response = await fetch('http://10.0.2.2:8080/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usernameOrEmail, password }),
-      });
-
-      if (response.status != 200) return 0; // Credenciais inválidas
-
-      const data = await response.json();
-
-      // Salvando os tokens e dados do usuário
-      await AsyncStorage.setItem('accessToken', data.accessToken);
-      await AsyncStorage.setItem('expiresIn', String(data.expiresIn));
-      await AsyncStorage.setItem('refreshToken', data.refreshToken);
-      setIsAuthenticated(true);
-      
-      return 1; // Login bem-sucedido
-
-    } 
-    catch (error) 
-    {
-      console.log('Erro no login:', error);
-      return -1; // Erro inesperado
-    }
-  };
-
-  // Logout do usuário
-  const logout = async (): Promise<number> => {
-
-    try
-    {
-      await AsyncStorage.removeItem('accessToken');
-      await AsyncStorage.removeItem('expiresIn');
-      await AsyncStorage.removeItem('refreshToken');
-      setIsAuthenticated(false);
-      return 1;
-    }
-    catch (error) 
-    {
-      console.log('Erro no logout:', error);
-      return -1; // Erro inesperado
-    }
+  const handleLogout = async () => {
+    const result = await logout();
+    if (result === 1) setIsAuthenticated(false);
+    return result;
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, cadastrar, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, cadastrar, login: handleLogin, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   );
